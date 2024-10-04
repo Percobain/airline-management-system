@@ -1,5 +1,8 @@
 # Airline Management System
 
+## UPDATE
+CLI is working!
+
 ## Overview
 
 This is a Java-based Airline Management System using Swing for the GUI. The system is designed to manage flights, passengers, and admin profiles using Object-Oriented Programming (OOP) principles.
