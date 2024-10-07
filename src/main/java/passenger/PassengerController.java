@@ -19,23 +19,24 @@ public class PassengerController {
     }
 
     // Method for passenger signup
-    public void signup(String passengerId, String name, String email, String phoneNumber, boolean hasVisa) {
-        Passenger newPassenger = new Passenger(passengerId, name, email, phoneNumber, hasVisa);
+    public void signup(String passengerId, String name, String email, String password, String phoneNumber, boolean hasVisa) {
+        Passenger newPassenger = new Passenger(passengerId, name, email, password, phoneNumber, hasVisa);
         passengers.add(newPassenger);
         System.out.println("Passenger signed up successfully: " + newPassenger);
     }
 
     // Method for passenger login (simplified for this example)
-    public Passenger login(String email) {
+    public Passenger login(String email, String password) {
         for (Passenger passenger : passengers) {
-            if (passenger.getEmail().equals(email)) {
+            if (passenger.getEmail().equals(email) && passenger.getPassword().equals(password)) {
                 System.out.println("Passenger logged in: " + passenger);
                 return passenger;
             }
         }
-        System.out.println("Passenger with email " + email + " not found.");
+        System.out.println("Invalid email or password.");
         return null;
     }
+    
 
     // Method for booking a flight
     public void bookFlight(String bookingId, Passenger passenger, String flightNumber) {
@@ -56,9 +57,8 @@ public class PassengerController {
     }
 
     // Method for updating passenger profile
-    public void updateProfile(Passenger passenger, String newName, String newEmail, String newPhoneNumber, boolean newHasVisa) {
+    public void updateProfile(Passenger passenger, String newName, String newPhoneNumber, boolean newHasVisa) {
         passenger.setName(newName);
-        passenger.setEmail(newEmail);
         passenger.setPhoneNumber(newPhoneNumber);
         passenger.setHasVisa(newHasVisa);
         System.out.println("Profile updated successfully: " + passenger);
@@ -66,7 +66,7 @@ public class PassengerController {
 
     // Method to view all bookings of a passenger
     public void viewPassengerBookings(Passenger passenger) {
-        System.out.println("Bookings for passenger: " + passenger.getName());
+        System.out.println("Bookings for passenger " + passenger.getName());
         for (Booking booking : bookings) {
             if (booking.getPassenger().getPassengerId().equals(passenger.getPassengerId())) {
                 System.out.println(booking);
@@ -100,7 +100,7 @@ public class PassengerController {
                 return;
             }
         }
-        System.out.println("Booking with ID " + bookingId + "not found.");
+        System.out.println("Booking with ID " + bookingId + " not found.");
     }
 
     // Method to get all passengers

@@ -4,14 +4,16 @@ public class Passenger {
     private String passengerId;
     private String name;
     private String email;
+    private String password;
     private String phoneNumber;
     private boolean hasVisa;
 
     // Constructor
-    public Passenger(String passengerId, String name, String email, String phoneNumber, boolean hasVisa) {
+    public Passenger(String passengerId, String name, String email, String password, String phoneNumber, boolean hasVisa) {
         this.passengerId = passengerId;
         this.name = name;
         this.email = email;
+        this.password = password;
         this.phoneNumber = phoneNumber;
         this.hasVisa = hasVisa;
     }
@@ -39,6 +41,14 @@ public class Passenger {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getPhoneNumber() {
