@@ -16,6 +16,8 @@ This is a Java-based Airline Management System using Swing for the GUI. The syst
     *   Add new flights
     *   Remove existing flights
     *   Update flight schedules
+
+**PENDING**
 *   **Passenger Management**:
     *   Remove passenger bookings
     *   Manage passenger profiles
