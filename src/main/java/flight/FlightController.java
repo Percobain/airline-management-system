@@ -49,4 +49,9 @@ public class FlightController {
     public FlightSchedule getFlightSchedule() {
         return flightSchedule;
     }
+
+    public Flight getFlightByNumber(String flightNumber) {
+        return flightSchedule.getFlight(flightNumber);
+    }
+
 }

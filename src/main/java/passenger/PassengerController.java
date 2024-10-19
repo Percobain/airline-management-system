@@ -65,13 +65,29 @@ public class PassengerController {
     }
 
     // Method to view all bookings of a passenger
-    public void viewPassengerBookings(Passenger passenger) {
+    public String viewPassengerBookings(Passenger passenger) {
         System.out.println("Bookings for passenger " + passenger.getName());
         for (Booking booking : bookings) {
             if (booking.getPassenger().getPassengerId().equals(passenger.getPassengerId())) {
                 System.out.println(booking);
             }
         }
+        StringBuilder bookingsInfo = new StringBuilder();
+        bookingsInfo.append("Bookings for passenger ").append(passenger.getName()).append(":\n\n");
+        boolean hasBookings = false;
+        
+        for (Booking booking : bookings) {
+            if (booking.getPassenger().getPassengerId().equals(passenger.getPassengerId())) {
+                bookingsInfo.append(booking.toString()).append("\n\n");
+                hasBookings = true;
+            }
+        }
+        
+        if (!hasBookings) {
+            bookingsInfo.append("No bookings found!");
+        }
+        
+        return bookingsInfo.toString();
     }
 
     // Method to cancel a booking

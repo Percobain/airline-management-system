@@ -11,8 +11,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 import javax.swing.table.DefaultTableModel;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class Main extends JFrame {
@@ -83,22 +84,19 @@ public class Main extends JFrame {
 
     private void showAdminActionsDialog() {
         JDialog dialog = new JDialog(this, "Admin Actions", true);
-        dialog.setLayout(new GridLayout(5, 1));
+        dialog.setLayout(new GridLayout(4, 1));
 
         JButton addFlightButton = new JButton("Add New Flight");
         JButton removeFlightButton = new JButton("Remove Flight");
         JButton updateFlightButton = new JButton("Update Flight");
-        JButton viewFlightsButton = new JButton("View All Flights");
 
         addFlightButton.addActionListener(e -> showAddFlightDialog());
         removeFlightButton.addActionListener(e -> showRemoveFlightDialog());
         updateFlightButton.addActionListener(e -> showUpdateFlightDialog());
-        viewFlightsButton.addActionListener(e -> showAllFlights());
 
         dialog.add(addFlightButton);
         dialog.add(removeFlightButton);
         dialog.add(updateFlightButton);
-        dialog.add(viewFlightsButton);
 
         dialog.pack();
         dialog.setVisible(true);
@@ -153,40 +151,77 @@ public class Main extends JFrame {
         }
     }
 
+    private void updateFlight(String flightNumber, String origin, String destination, LocalDateTime departureTime, LocalDateTime arrivalTime, String status) {
+        adminController.updateFlight(flightNumber, origin, destination, departureTime, arrivalTime, status);
+    }
+
     private void showUpdateFlightDialog() {
-        // Similar to showAddFlightDialog, but pre-fill fields with existing data
-        // and use adminController.updateFlight() instead
-        flightController.viewAllFlights();
+        String flightNumber = JOptionPane.showInputDialog("Enter flight number to update:");
+        if (flightNumber == null || flightNumber.trim().isEmpty()) {
+            return;
+        }
+
+        Flight flight = flightController.getFlightByNumber(flightNumber);
+        if (flight == null) {
+            JOptionPane.showMessageDialog(null, "Flight not found.");
+            return;
+        }
+
+        JTextField originField = new JTextField(flight.getOrigin());
+        JTextField destinationField = new JTextField(flight.getDestination());
+        JTextField departureTimeField = new JTextField(flight.getDepartureTime().toString());
+        JTextField arrivalTimeField = new JTextField(flight.getArrivalTime().toString());
+        JTextField statusField = new JTextField(flight.getStatus());
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.add(new JLabel("Origin:"));
+        panel.add(originField);
+        panel.add(new JLabel("Destination:"));
+        panel.add(destinationField);
+        panel.add(new JLabel("Departure Time (yyyy-MM-dd HH:mm):"));
+        panel.add(departureTimeField);
+        panel.add(new JLabel("Arrival Time (yyyy-MM-dd HH:mm):"));
+        panel.add(arrivalTimeField);
+        panel.add(new JLabel("Status:"));
+        panel.add(statusField);
+
+        int result = JOptionPane.showConfirmDialog(null, panel, "Update Flight", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                String newOrigin = originField.getText();
+                String newDestination = destinationField.getText();
+                LocalDateTime newDepartureTime = LocalDateTime.parse(departureTimeField.getText(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                LocalDateTime newArrivalTime = LocalDateTime.parse(arrivalTimeField.getText(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                String newStatus = statusField.getText();
+
+                updateFlight(flightNumber, newOrigin, newDestination, newDepartureTime, newArrivalTime, newStatus);
+            } catch (DateTimeParseException e) {
+                JOptionPane.showMessageDialog(null, "Invalid date/time format. Please use yyyy-MM-dd HH:mm");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error updating flight: " + e.getMessage());
+            }
+        }
     }
 
-private void refreshFlightSchedule(DefaultTableModel model) {
-    // Clear existing rows
-    model.setRowCount(0);
-    
-    // Get all flights from the FlightController
-    List<Flight> flights = flightController.viewAllFlights();
-    
-    // Populate the table with flight data
-    for (Flight flight : flights) {
-        Object[] row = {
-            flight.getFlightNumber(),
-            flight.getOrigin(),
-            flight.getDestination(),
-            flight.getDepartureTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-            flight.getArrivalTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-            flight.getStatus()
-        };
-        model.addRow(row);
-    }
-}
-
-    private void showAllFlights() {
-        JTextArea flightList = new JTextArea();
-        flightList.setEditable(false);
-        flightController.viewAllFlights(); // Modify this method to return a String
-        // flightList.setText(flightController.viewAllFlights());
-
-        JOptionPane.showMessageDialog(this, new JScrollPane(flightList), "All Flights", JOptionPane.INFORMATION_MESSAGE);
+    private void refreshFlightSchedule(DefaultTableModel model) {
+        // Clear existing rows
+        model.setRowCount(0);
+        
+        // Get all flights from the FlightController
+        List<Flight> flights = flightController.viewAllFlights();
+        
+        // Populate the table with flight data
+        for (Flight flight : flights) {
+            Object[] row = {
+                flight.getFlightNumber(),
+                flight.getOrigin(),
+                flight.getDestination(),
+                flight.getDepartureTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                flight.getArrivalTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                flight.getStatus()
+            };
+            model.addRow(row);
+        }
     }
 
     private JPanel createPassengerPanel() {
@@ -320,12 +355,18 @@ private void refreshFlightSchedule(DefaultTableModel model) {
     }
 
     private void showPassengerBookings(Passenger passenger) {
-        JTextArea bookingsList = new JTextArea();
+        JTextArea bookingsList = new JTextArea(20, 40);  // Specify rows and columns for better sizing
         bookingsList.setEditable(false);
-        passengerController.viewPassengerBookings(passenger); // Modify this method to return a String
-        // bookingsList.setText(passengerController.viewPassengerBookings(passenger));
-
-        JOptionPane.showMessageDialog(this, new JScrollPane(bookingsList), "My Bookings", JOptionPane.INFORMATION_MESSAGE);
+        bookingsList.setLineWrap(true);
+        bookingsList.setWrapStyleWord(true);
+        
+        String bookingsInfo = passengerController.viewPassengerBookings(passenger);
+        bookingsList.setText(bookingsInfo);
+    
+        JScrollPane scrollPane = new JScrollPane(bookingsList);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    
+        JOptionPane.showMessageDialog(this, scrollPane, "My Bookings", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showUpdateProfileDialog(Passenger passenger) {
