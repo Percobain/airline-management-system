@@ -48,23 +48,4 @@ public class AdminController {
     public void viewFlightSchedule() {
         flightController.viewAllFlights(); // Delegate viewing flights to FlightController
     }
-
-    // Manage passenger bookings (example: remove booking)
-    public void removePassengerBooking(String bookingId) {
-        // Assuming you have a BookingController or this method needs further integration with other controllers.
-        // Example stub for functionality
-        System.out.println("This feature will be implemented once BookingController is available.");
-    }
-
-    // Manage Admin Profile (for future functionality)
-    public void manageProfile() {
-        // Logic for updating admin profile
-        System.out.println("Admin profile management functionality will be added here.");
-    }
-
-    // Manage Passengers (for future functionality)
-    public void managePassenger() {
-        // Logic for viewing and managing passenger information
-        System.out.println("Passenger management functionality will be added here.");
-    }
 }
