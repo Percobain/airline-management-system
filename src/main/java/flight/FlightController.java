@@ -1,6 +1,7 @@
 package src.main.java.flight;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class FlightController {
     private FlightSchedule flightSchedule;
@@ -36,12 +37,14 @@ public class FlightController {
     }
 
     // Method to view all flights
-    public void viewAllFlights() {
+    public List<Flight> viewAllFlights() {
         System.out.println("Flight Schedule:");
         for (Flight flight : flightSchedule.getAllFlights()) {
             System.out.println(flight);
         }
+        return flightSchedule.getAllFlights();
     }
+
 
     public FlightSchedule getFlightSchedule() {
         return flightSchedule;

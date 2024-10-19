@@ -1,292 +1,409 @@
 package src.main.java.main;
 
-
 import src.main.java.admin.AdminController;
+import src.main.java.flight.Flight;
 import src.main.java.flight.FlightController;
 import src.main.java.passenger.Passenger;
 import src.main.java.passenger.PassengerController;
 import src.main.java.user.UserController;
 
+import javax.swing.*;
+import java.awt.*;
 import java.time.LocalDateTime;
-import java.util.Scanner;
+import java.time.format.DateTimeFormatter;
+import javax.swing.table.DefaultTableModel;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-public class Main {
-    private static AdminController adminController;
-    private static PassengerController passengerController;
-    private static FlightController flightController;
-    private static UserController userController;
+public class Main extends JFrame {
+    private AdminController adminController;
+    private PassengerController passengerController;
+    private FlightController flightController;
+    private UserController userController;
 
-    public static void main(String[] args) {
+    private JTabbedPane tabbedPane;
+    private JPanel adminPanel, passengerPanel, flightSchedulePanel;
+
+    public Main() {
         // Initialize controllers
         flightController = new FlightController();
         adminController = new AdminController(flightController);
         passengerController = new PassengerController(flightController);
         userController = new UserController(flightController);
 
-        Scanner scanner = new Scanner(System.in);
-        boolean running = true;
+        setTitle("Airline Management System");
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        while (running) {
-            System.out.println("\n===== Airline Management System =====");
-            System.out.println("1. Admin Login");
-            System.out.println("2. Passenger Portal");
-            System.out.println("3. View Flight Schedule (Without Registration)");
-            System.out.println("4. Exit");
-            System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // consume the newline
+        tabbedPane = new JTabbedPane();
+        adminPanel = createAdminPanel();
+        passengerPanel = createPassengerPanel();
+        flightSchedulePanel = createFlightSchedulePanel();
 
-            switch (choice) {
-                case 1:
-                    adminLogin(scanner);
-                    break;
-                case 2:
-                    passengerMenu(scanner);
-                    break;
-                case 3:
-                    userController.viewFlightSchedule();
-                    break;
-                case 4:
-                    running = false;
-                    System.out.println("Exiting the system...");
-                    break;
-                default:
-                    System.out.println("Invalid choice, please try again.");
+        tabbedPane.addTab("Admin", adminPanel);
+        tabbedPane.addTab("Passenger", passengerPanel);
+        tabbedPane.addTab("Flight Schedule", flightSchedulePanel);
+
+        add(tabbedPane);
+    }
+
+    private JPanel createAdminPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JPanel loginPanel = new JPanel(new GridLayout(3, 2));
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JButton loginButton = new JButton("Login");
+
+        loginPanel.add(new JLabel("Username:"));
+        loginPanel.add(usernameField);
+        loginPanel.add(new JLabel("Password:"));
+        loginPanel.add(passwordField);
+        loginPanel.add(new JLabel());
+        loginPanel.add(loginButton);
+
+        JTextArea outputArea = new JTextArea();
+        outputArea.setEditable(false);
+
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            if (adminController.login(username, password)) {
+                outputArea.setText("Admin login successful.");
+                showAdminActionsDialog();
+            } else {
+                outputArea.setText("Invalid Admin credentials.");
             }
-        }
+        });
 
-        scanner.close();
+        panel.add(loginPanel, BorderLayout.NORTH);
+        panel.add(new JScrollPane(outputArea), BorderLayout.CENTER);
+
+        return panel;
     }
 
-    // Admin Login and Actions
-    private static void adminLogin(Scanner scanner) {
-        System.out.print("Enter Admin Username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter Admin Password: ");
-        String password = scanner.nextLine();
+    private void showAdminActionsDialog() {
+        JDialog dialog = new JDialog(this, "Admin Actions", true);
+        dialog.setLayout(new GridLayout(5, 1));
 
-        if (adminController.login(username, password)) {
-            System.out.println("Admin login successful.");
-            adminActions(scanner);
-        } else {
-            System.out.println("Invalid Admin credentials.");
+        JButton addFlightButton = new JButton("Add New Flight");
+        JButton removeFlightButton = new JButton("Remove Flight");
+        JButton updateFlightButton = new JButton("Update Flight");
+        JButton viewFlightsButton = new JButton("View All Flights");
+
+        addFlightButton.addActionListener(e -> showAddFlightDialog());
+        removeFlightButton.addActionListener(e -> showRemoveFlightDialog());
+        updateFlightButton.addActionListener(e -> showUpdateFlightDialog());
+        viewFlightsButton.addActionListener(e -> showAllFlights());
+
+        dialog.add(addFlightButton);
+        dialog.add(removeFlightButton);
+        dialog.add(updateFlightButton);
+        dialog.add(viewFlightsButton);
+
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
+    private void showAddFlightDialog() {
+        JDialog dialog = new JDialog(this, "Add New Flight", true);
+        dialog.setLayout(new GridLayout(7, 2));
+
+        JTextField flightNumberField = new JTextField();
+        JTextField originField = new JTextField();
+        JTextField destinationField = new JTextField();
+        JTextField departureTimeField = new JTextField();
+        JTextField arrivalTimeField = new JTextField();
+        JTextField statusField = new JTextField();
+
+        dialog.add(new JLabel("Flight Number:"));
+        dialog.add(flightNumberField);
+        dialog.add(new JLabel("Origin:"));
+        dialog.add(originField);
+        dialog.add(new JLabel("Destination:"));
+        dialog.add(destinationField);
+        dialog.add(new JLabel("Departure Time (YYYY-MM-DDTHH:MM):"));
+        dialog.add(departureTimeField);
+        dialog.add(new JLabel("Arrival Time (YYYY-MM-DDTHH:MM):"));
+        dialog.add(arrivalTimeField);
+        dialog.add(new JLabel("Status:"));
+        dialog.add(statusField);
+
+        JButton addButton = new JButton("Add Flight");
+        addButton.addActionListener(e -> {
+            String flightNumber = flightNumberField.getText();
+            String origin = originField.getText();
+            String destination = destinationField.getText();
+            LocalDateTime departureTime = LocalDateTime.parse(departureTimeField.getText());
+            LocalDateTime arrivalTime = LocalDateTime.parse(arrivalTimeField.getText());
+            String status = statusField.getText();
+
+            adminController.addFlight(flightNumber, origin, destination, departureTime, arrivalTime, status);
+            dialog.dispose();
+        });
+
+        dialog.add(addButton);
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
+    private void showRemoveFlightDialog() {
+        String flightNumber = JOptionPane.showInputDialog(this, "Enter Flight Number to Remove:");
+        if (flightNumber != null && !flightNumber.isEmpty()) {
+            adminController.removeFlight(flightNumber);
         }
     }
 
-    // Admin actions like adding/removing flights
-    private static void adminActions(Scanner scanner) {
-        boolean adminLoggedIn = true;
+    private void showUpdateFlightDialog() {
+        // Similar to showAddFlightDialog, but pre-fill fields with existing data
+        // and use adminController.updateFlight() instead
+        flightController.viewAllFlights();
+    }
 
-        while (adminLoggedIn) {
-            System.out.println("\n===== Admin Actions =====");
-            System.out.println("1. Add New Flight");
-            System.out.println("2. Remove Flight");
-            System.out.println("3. Update Flight");
-            System.out.println("4. View All Flights");
-            System.out.println("5. Logout");
-            System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // consume the newline
+private void refreshFlightSchedule(DefaultTableModel model) {
+    // Clear existing rows
+    model.setRowCount(0);
+    
+    // Get all flights from the FlightController
+    List<Flight> flights = flightController.viewAllFlights();
+    
+    // Populate the table with flight data
+    for (Flight flight : flights) {
+        Object[] row = {
+            flight.getFlightNumber(),
+            flight.getOrigin(),
+            flight.getDestination(),
+            flight.getDepartureTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+            flight.getArrivalTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+            flight.getStatus()
+        };
+        model.addRow(row);
+    }
+}
 
-            switch (choice) {
-                case 1:
-                    addNewFlight(scanner);
-                    break;
-                case 2:
-                    removeFlight(scanner);
-                    break;
-                case 3:
-                    updateFlight(scanner);
-                    break;
-                case 4:
-                    flightController.viewAllFlights();
-                    break;
-                case 5:
-                    adminLoggedIn = false;
-                    System.out.println("Admin logged out.");
-                    break;
-                default:
-                    System.out.println("Invalid choice, please try again.");
+    private void showAllFlights() {
+        JTextArea flightList = new JTextArea();
+        flightList.setEditable(false);
+        flightController.viewAllFlights(); // Modify this method to return a String
+        // flightList.setText(flightController.viewAllFlights());
+
+        JOptionPane.showMessageDialog(this, new JScrollPane(flightList), "All Flights", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private JPanel createPassengerPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JTabbedPane passengerTabs = new JTabbedPane();
+
+        passengerTabs.addTab("Login", createPassengerLoginPanel());
+        passengerTabs.addTab("Signup", createPassengerSignupPanel());
+
+        panel.add(passengerTabs, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createPassengerLoginPanel() {
+        JPanel panel = new JPanel(new GridLayout(3, 2));
+        JTextField emailField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JButton loginButton = new JButton("Login");
+
+        panel.add(new JLabel("Email:"));
+        panel.add(emailField);
+        panel.add(new JLabel("Password:"));
+        panel.add(passwordField);
+        panel.add(new JLabel());
+        panel.add(loginButton);
+
+        loginButton.addActionListener(e -> {
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            Passenger passenger = passengerController.login(email, password);
+            if (passenger != null) {
+                showPassengerActionsDialog(passenger);
+            } else {
+                JOptionPane.showMessageDialog(this, "Invalid Email or Password.");
             }
+        });
+
+        return panel;
+    }
+
+    private JPanel createPassengerSignupPanel() {
+        JPanel panel = new JPanel(new GridLayout(7, 2));
+        JTextField passengerIdField = new JTextField();
+        JTextField nameField = new JTextField();
+        JTextField emailField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JTextField phoneNumberField = new JTextField();
+        JCheckBox hasVisaCheckBox = new JCheckBox();
+        JButton signupButton = new JButton("Signup");
+
+        panel.add(new JLabel("Passenger ID:"));
+        panel.add(passengerIdField);
+        panel.add(new JLabel("Name:"));
+        panel.add(nameField);
+        panel.add(new JLabel("Email:"));
+        panel.add(emailField);
+        panel.add(new JLabel("Password:"));
+        panel.add(passwordField);
+        panel.add(new JLabel("Phone Number:"));
+        panel.add(phoneNumberField);
+        panel.add(new JLabel("Has Visa:"));
+        panel.add(hasVisaCheckBox);
+        panel.add(new JLabel());
+        panel.add(signupButton);
+
+        signupButton.addActionListener(e -> {
+            String passengerId = passengerIdField.getText();
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            String phoneNumber = phoneNumberField.getText();
+            boolean hasVisa = hasVisaCheckBox.isSelected();
+
+            passengerController.signup(passengerId, name, email, password, phoneNumber, hasVisa);
+            JOptionPane.showMessageDialog(this, "Passenger signup successful.");
+        });
+
+        return panel;
+    }
+
+    private void showPassengerActionsDialog(Passenger passenger) {
+        JDialog dialog = new JDialog(this, "Passenger Actions", true);
+        dialog.setLayout(new GridLayout(6, 1));
+
+        JButton bookFlightButton = new JButton("Book a Flight");
+        JButton viewBookingsButton = new JButton("View My Bookings");
+        JButton updateProfileButton = new JButton("Update Profile");
+        JButton cancelBookingButton = new JButton("Cancel Booking");
+        JButton confirmBookingButton = new JButton("Confirm Booking");
+
+        bookFlightButton.addActionListener(e -> showBookFlightDialog(passenger));
+        viewBookingsButton.addActionListener(e -> showPassengerBookings(passenger));
+        updateProfileButton.addActionListener(e -> showUpdateProfileDialog(passenger));
+        cancelBookingButton.addActionListener(e -> showCancelBookingDialog());
+        confirmBookingButton.addActionListener(e -> showConfirmBookingDialog());
+
+        dialog.add(bookFlightButton);
+        dialog.add(viewBookingsButton);
+        dialog.add(updateProfileButton);
+        dialog.add(cancelBookingButton);
+        dialog.add(confirmBookingButton);
+
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
+    private void showBookFlightDialog(Passenger passenger) {
+        JDialog dialog = new JDialog(this, "Book a Flight", true);
+        dialog.setLayout(new GridLayout(3, 2));
+
+        JTextField flightNumberField = new JTextField();
+        JTextField bookingIdField = new JTextField();
+        JButton bookButton = new JButton("Book Flight");
+
+        dialog.add(new JLabel("Flight Number:"));
+        dialog.add(flightNumberField);
+        dialog.add(new JLabel("Booking ID:"));
+        dialog.add(bookingIdField);
+        dialog.add(new JLabel());
+        dialog.add(bookButton);
+
+        bookButton.addActionListener(e -> {
+            String flightNumber = flightNumberField.getText();
+            String bookingId = bookingIdField.getText();
+            passengerController.bookFlight(bookingId, passenger, flightNumber);
+            dialog.dispose();
+        });
+
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
+    private void showPassengerBookings(Passenger passenger) {
+        JTextArea bookingsList = new JTextArea();
+        bookingsList.setEditable(false);
+        passengerController.viewPassengerBookings(passenger); // Modify this method to return a String
+        // bookingsList.setText(passengerController.viewPassengerBookings(passenger));
+
+        JOptionPane.showMessageDialog(this, new JScrollPane(bookingsList), "My Bookings", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showUpdateProfileDialog(Passenger passenger) {
+        JDialog dialog = new JDialog(this, "Update Profile", true);
+        dialog.setLayout(new GridLayout(4, 2));
+
+        JTextField nameField = new JTextField(passenger.getName());
+        JTextField phoneNumberField = new JTextField(passenger.getPhoneNumber());
+        JCheckBox hasVisaCheckBox = new JCheckBox("", passenger.hasVisa());
+        JButton updateButton = new JButton("Update Profile");
+
+        dialog.add(new JLabel("New Name:"));
+        dialog.add(nameField);
+        dialog.add(new JLabel("New Phone Number:"));
+        dialog.add(phoneNumberField);
+        dialog.add(new JLabel("Has Visa:"));
+        dialog.add(hasVisaCheckBox);
+        dialog.add(new JLabel());
+        dialog.add(updateButton);
+
+        updateButton.addActionListener(e -> {
+            String newName = nameField.getText();
+            String newPhoneNumber = phoneNumberField.getText();
+            boolean newHasVisa = hasVisaCheckBox.isSelected();
+
+            passengerController.updateProfile(passenger, newName, newPhoneNumber, newHasVisa);
+            dialog.dispose();
+        });
+
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
+    private void showCancelBookingDialog() {
+        String bookingId = JOptionPane.showInputDialog(this, "Enter Booking ID to Cancel:");
+        if (bookingId != null && !bookingId.isEmpty()) {
+            passengerController.cancelBooking(bookingId);
         }
     }
 
-    // Admin function to add new flight
-    private static void addNewFlight(Scanner scanner) {
-        System.out.print("Enter Flight Number: ");
-        String flightNumber = scanner.nextLine();
-        System.out.print("Enter Origin: ");
-        String origin = scanner.nextLine();
-        System.out.print("Enter Destination: ");
-        String destination = scanner.nextLine();
-        System.out.print("Enter Departure Time (YYYY-MM-DDTHH:MM): ");
-        LocalDateTime departureTime = LocalDateTime.parse(scanner.nextLine());
-        System.out.print("Enter Arrival Time (YYYY-MM-DDTHH:MM): ");
-        LocalDateTime arrivalTime = LocalDateTime.parse(scanner.nextLine());
-        System.out.print("Enter Status: ");
-        String status = scanner.nextLine();
-
-        adminController.addFlight(flightNumber, origin, destination, departureTime, arrivalTime, status);
-    }
-
-    // Admin function to remove flight
-    private static void removeFlight(Scanner scanner) {
-        System.out.print("Enter Flight Number to Remove: ");
-        String flightNumber = scanner.nextLine();
-        adminController.removeFlight(flightNumber);
-    }
-
-    // Admin function to update flight
-    private static void updateFlight(Scanner scanner) {
-        System.out.print("Enter Flight Number to Update: ");
-        String flightNumber = scanner.nextLine();
-        System.out.print("Enter New Origin: ");
-        String newOrigin = scanner.nextLine();
-        System.out.print("Enter New Destination: ");
-        String newDestination = scanner.nextLine();
-        System.out.print("Enter New Departure Time (YYYY-MM-DDTHH:MM): ");
-        LocalDateTime newDepartureTime = LocalDateTime.parse(scanner.nextLine());
-        System.out.print("Enter New Arrival Time (YYYY-MM-DDTHH:MM): ");
-        LocalDateTime newArrivalTime = LocalDateTime.parse(scanner.nextLine());
-        System.out.print("Enter New Status: ");
-        String newStatus = scanner.nextLine();
-
-        adminController.updateFlight(flightNumber, newOrigin, newDestination, newDepartureTime, newArrivalTime, newStatus);
-    }
-
-    // Passenger Signup/Login and Actions
-    private static void passengerMenu(Scanner scanner) {
-        System.out.println("\n===== Passenger Menu =====");
-        System.out.println("1. Signup");
-        System.out.println("2. Login");
-        System.out.print("Choose an option: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();  // consume the newline
-
-        switch (choice) {
-            case 1:
-                passengerSignup(scanner);
-                break;
-            case 2:
-                passengerLogin(scanner);
-                break;
-            default:
-                System.out.println("Invalid choice, please try again.");
+    private void showConfirmBookingDialog() {
+        String bookingId = JOptionPane.showInputDialog(this, "Enter Booking ID to Confirm:");
+        if (bookingId != null && !bookingId.isEmpty()) {
+            passengerController.confirmBooking(bookingId);
         }
     }
 
-    private static void passengerSignup(Scanner scanner) {
-        System.out.print("Enter Passenger ID: ");
-        String passengerId = scanner.nextLine();
-        System.out.print("Enter Name: ");
-        String name = scanner.nextLine();
-        System.out.print("Enter Email: ");
-        String email = scanner.nextLine();
-        System.out.print("Enter Password: ");
-        String password = scanner.nextLine();
-        System.out.print("Enter Phone Number: ");
-        String phoneNumber = scanner.nextLine();
-        System.out.print("Do you have a Visa? (true/false): ");
-        boolean hasVisa = scanner.nextBoolean();
-        scanner.nextLine();  // consume the newline
-
-        passengerController.signup(passengerId, name, email, password, phoneNumber, hasVisa);
-        System.out.println("Passenger signup successful.");
+    private JPanel createFlightSchedulePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+    
+        // Create a table model with column names
+        String[] columnNames = {"Flight Number", "Origin", "Destination", "Departure Time", "Arrival Time", "Status"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        
+        // Create a JTable with the model
+        JTable flightTable = new JTable(model);
+        
+        // Add the table to a scroll pane
+        JScrollPane scrollPane = new JScrollPane(flightTable);
+        
+        // Create a refresh button
+        JButton refreshButton = new JButton("Refresh Schedule");
+        refreshButton.addActionListener(e -> refreshFlightSchedule(model));
+        
+        // Add components to the panel
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(refreshButton, BorderLayout.SOUTH);
+        
+        // Initial population of the table
+        refreshFlightSchedule(model);
+        
+        return panel;
     }
 
-    private static void passengerLogin(Scanner scanner) {
-        System.out.print("Enter Email: ");
-        String email = scanner.nextLine();
-        System.out.print("Enter Password: ");
-        String password = scanner.nextLine();
-    
-        Passenger passenger = passengerController.login(email, password);
-        if (passenger != null) {
-            System.out.println("Passenger login successful.");
-            passengerActions(scanner, passenger);  // Pass the logged-in passenger to passengerAction
-        } else {
-            System.out.println("Invalid Email or Password.");
-        }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            Main ui = new Main();
+            ui.setVisible(true);
+        });
     }
-
-    // // Passenger actions
-    private static void passengerActions(Scanner scanner, Passenger passenger) {
-        boolean passengerLoggedIn = true;
-    
-        while (passengerLoggedIn) {
-            System.out.println("\n===== Passenger Actions =====");
-            System.out.println("1. Book a Flight");
-            System.out.println("2. View All Flights");
-            System.out.println("3. View My Bookings");
-            System.out.println("4. Update Profile");
-            System.out.println("5. Cancel Booking");
-            System.out.println("6. Confirm Booking");
-            System.out.println("7. Logout");
-            System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // consume the newline
-    
-            switch (choice) {
-                case 1:
-                    bookFlight(scanner, passenger);  // Book a flight
-                    break;
-                case 2:
-                    flightController.viewAllFlights();  // View all available flights
-                    break;
-                case 3:
-                    passengerController.viewPassengerBookings(passenger);  // View passenger's bookings
-                    break;
-                case 4:
-                    updateProfile(scanner, passenger);  // Update passenger's profile
-                    break;
-                case 5:
-                    cancelBooking(scanner);  // Cancel a booking
-                    break;
-                case 6:
-                    confirmBooking(scanner);  // Confirm a booking
-                    break;
-                case 7:
-                    passengerLoggedIn = false;
-                    System.out.println("Passenger logged out.");
-                    break;
-                default:
-                    System.out.println("Invalid choice, please try again.");
-            }
-        }
-    }
-    
-    private static void bookFlight(Scanner scanner, Passenger passenger) {
-        System.out.print("Enter Flight Number to Book: ");
-        String flightNumber = scanner.nextLine();
-    
-        // Call passengerController to book a flight for the logged-in passenger
-        System.out.print("Enter Booking ID: ");
-        String bookingId = scanner.nextLine();
-    
-        passengerController.bookFlight(bookingId, passenger, flightNumber);
-    }
-
-    private static void updateProfile(Scanner scanner, Passenger passenger) {
-        System.out.print("Enter New Name: ");
-        String newName = scanner.nextLine();
-        System.out.print("Enter New Phone Number: ");
-        String newPhoneNumber = scanner.nextLine();
-        System.out.print("Do you have a Visa? (true/false): ");
-        boolean newHasVisa = scanner.nextBoolean();
-        scanner.nextLine();  // consume the newline
-    
-        passengerController.updateProfile(passenger, newName, newPhoneNumber, newHasVisa);
-    }
-
-    private static void cancelBooking(Scanner scanner) {
-        System.out.print("Enter Booking ID to Cancel: ");
-        String bookingId = scanner.nextLine();
-        passengerController.cancelBooking(bookingId);
-    }
-
-    private static void confirmBooking(Scanner scanner) {
-        System.out.print("Enter Booking ID to Confirm: ");
-        String bookingId = scanner.nextLine();
-        passengerController.confirmBooking(bookingId);
-    }    
 }
