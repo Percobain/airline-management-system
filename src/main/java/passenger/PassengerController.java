@@ -9,7 +9,7 @@ import java.util.List;
 public class PassengerController {
     private List<Passenger> passengers;
     private List<Booking> bookings;
-    private FlightController flightController;  // Passenger works with FlightController for flight information
+    private FlightController flightController; // Passenger works with FlightController for flight information
 
     // Constructor
     public PassengerController(FlightController flightController) {
@@ -18,8 +18,32 @@ public class PassengerController {
         this.flightController = flightController;
     }
 
-    // Method for passenger signup
-    public void signup(String passengerId, String name, String email, String password, String phoneNumber, boolean hasVisa) {
+    // Method for passenger signup with input validation
+    public void signup(String passengerId, String name, String email, String password, String phoneNumber,
+            boolean hasVisa) {
+        // Check for null or empty fields
+        if (passengerId == null || passengerId.trim().isEmpty() ||
+                name == null || name.trim().isEmpty() ||
+                email == null || email.trim().isEmpty() ||
+                password == null || password.trim().isEmpty() ||
+                phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            System.out.println("All fields are required for signup.");
+            return;
+        }
+
+        // Validate email format
+        if (!email.endsWith("@gmail.com")) {
+            System.out.println("Email must be a valid @gmail.com address.");
+            return;
+        }
+
+        // Validate phone number format
+        if (!phoneNumber.matches("\\d{10}")) {
+            System.out.println("Phone number must contain exactly 10 digits.");
+            return;
+        }
+
+        // If all validations pass, create a new passenger and add to the list
         Passenger newPassenger = new Passenger(passengerId, name, email, password, phoneNumber, hasVisa);
         passengers.add(newPassenger);
         System.out.println("Passenger signed up successfully: " + newPassenger);
@@ -36,23 +60,25 @@ public class PassengerController {
         System.out.println("Invalid email or password.");
         return null;
     }
-    
 
     // Method for booking a flight
-    public void bookFlight(String bookingId, Passenger passenger, String flightNumber) {
-        Flight flight = flightController.getFlightSchedule().getFlight(flightNumber);  // Retrieve flight from FlightController
+    public boolean bookFlight(String bookingId, Passenger passenger, String flightNumber) {
+        Flight flight = flightController.getFlightSchedule().getFlight(flightNumber); // Retrieve flight from
+                                                                                      // FlightController
         if (flight == null) {
             System.out.println("Flight with number " + flightNumber + " not found.");
-            return;
+            return false; // Return false if flight is not found
         }
 
         // Prevent booking international flight if passenger does not have a visa
         if (flight.getDestination().equalsIgnoreCase("International") && !passenger.hasVisa()) {
             System.out.println("Cannot book international flight. Passenger does not have a visa.");
+            return false; // Return false if the passenger does not have a visa
         } else {
             Booking newBooking = new Booking(bookingId, flight, passenger, flight.getDepartureTime(), false);
             bookings.add(newBooking);
             System.out.println("Flight booked successfully: " + newBooking);
+            return true; // Return true if booking is successful
         }
     }
 
@@ -66,32 +92,32 @@ public class PassengerController {
 
     // Method to view all bookings of a passenger
     public String viewPassengerBookings(Passenger passenger) {
-        System.out.println("Bookings for passenger " + passenger.getName());
-        for (Booking booking : bookings) {
-            if (booking.getPassenger().getPassengerId().equals(passenger.getPassengerId())) {
-                System.out.println(booking);
-            }
-        }
         StringBuilder bookingsInfo = new StringBuilder();
         bookingsInfo.append("Bookings for passenger ").append(passenger.getName()).append(":\n\n");
-        boolean hasBookings = false;
-        
+
+        boolean bookingsExist = false; // Flag to check if there are bookings for the passenger
+
+        // Loop through bookings and check for the current passenger
         for (Booking booking : bookings) {
             if (booking.getPassenger().getPassengerId().equals(passenger.getPassengerId())) {
                 bookingsInfo.append(booking.toString()).append("\n\n");
-                hasBookings = true;
+                bookingsExist = true; // Found at least one booking
             }
         }
-        
-        if (!hasBookings) {
+
+        // If no bookings found, append a message
+        if (!bookingsExist) {
             bookingsInfo.append("No bookings found!");
         }
-        
-        return bookingsInfo.toString();
+
+        // Optionally print to console for debugging
+        System.out.println(bookingsInfo.toString());
+
+        return bookingsInfo.toString(); // Return the complete bookings info
     }
 
     // Method to cancel a booking
-    public void cancelBooking(String bookingId) {
+    public boolean cancelBooking(String bookingId) {
         Booking bookingToRemove = null;
         for (Booking booking : bookings) {
             if (booking.getBookingId().equals(bookingId)) {
@@ -102,21 +128,24 @@ public class PassengerController {
         if (bookingToRemove != null) {
             bookings.remove(bookingToRemove);
             System.out.println("Booking canceled: " + bookingToRemove);
+            return true;
         } else {
             System.out.println("Booking with ID " + bookingId + " not found.");
+            return false;
         }
     }
 
     // Method to confirm a booking
-    public void confirmBooking(String bookingId) {
+    public boolean confirmBooking(String bookingId) {
         for (Booking booking : bookings) {
             if (booking.getBookingId().equals(bookingId)) {
                 booking.confirmBooking();
                 System.out.println("Booking confirmed: " + booking);
-                return;
+                return true;
             }
         }
         System.out.println("Booking with ID " + bookingId + " not found.");
+        return false;
     }
 
     // Method to get all passengers
