@@ -16,15 +16,18 @@ This is a Java-based Airline Management System using Swing for the GUI. The syst
     *   Add new flights
     *   Remove existing flights
     *   Update flight schedules
+    *   View all flights
 
 
 ### Passenger Features
 
 *   **Registration**: Passengers can sign up and log in to the system.
-*   **Profile Management**: Passengers can manage their own profiles.
+*   **Profile Management**: Passengers can update their profile details.
 *   **Flight Booking**:
     *   Book flights
-    *   Visa Checks
+    *   View their bookings
+    *   Cancel bookings
+    *   Confirm cookings
 
 ### User Features
 
