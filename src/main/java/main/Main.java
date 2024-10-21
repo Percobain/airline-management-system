@@ -11,7 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.EmptyBorder;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter; // if you're using DateTimeFormatter
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
@@ -95,7 +95,7 @@ public class Main extends JFrame {
     private void showAdminActionsDialog() {
         JDialog dialog = new JDialog(this, "Admin Actions", true);
         JPanel dialogPanel = new JPanel();
-        dialogPanel.setBorder(new EmptyBorder(20, 20, 0, 20)); // Set border on the panel
+        dialogPanel.setBorder(new EmptyBorder(20, 20, 0, 20));
         dialogPanel.setLayout(new GridLayout(5, 1));
 
         JButton addFlightButton = new JButton("Add New Flight");
@@ -125,7 +125,7 @@ public class Main extends JFrame {
 
         // Create an outer panel with border
         JPanel outerPanel = new JPanel();
-        outerPanel.setBorder(new EmptyBorder(20, 20, 10, 20)); // Set border for the outer panel
+        outerPanel.setBorder(new EmptyBorder(20, 20, 10, 20));
         outerPanel.setLayout(new BorderLayout());
 
         // Create the inner dialog panel with GridLayout
@@ -186,7 +186,7 @@ public class Main extends JFrame {
                 }
             }
         });
-        buttonPanel.add(addButton); // Add button to buttonPanel
+        buttonPanel.add(addButton);
 
         // Add the dialogPanel and buttonPanel to the outerPanel
         outerPanel.add(dialogPanel, BorderLayout.CENTER); // Add inner panel to the outer panel
@@ -204,7 +204,7 @@ public class Main extends JFrame {
 
         // Create a panel for the dialog content
         JPanel panel = new JPanel(new GridLayout(3, 1));
-        panel.setBorder(new EmptyBorder(10, 20, 10, 20)); // Set border for the outer panel
+        panel.setBorder(new EmptyBorder(10, 20, 10, 20));
         panel.add(new JLabel("Enter Flight Number to Remove:"));
         JTextField flightNumberField = new JTextField();
         flightNumberField.setPreferredSize(new Dimension(20, 40));
@@ -213,7 +213,7 @@ public class Main extends JFrame {
         // Add the panel to the dialog
         dialog.setContentPane(panel);
         dialog.pack();
-        dialog.setLocationRelativeTo(this); // Center the dialog relative to the main frame
+        dialog.setLocationRelativeTo(this);
 
         // Create a button for confirming the removal
         JButton removeButton = new JButton("Remove Flight");
@@ -261,7 +261,7 @@ public class Main extends JFrame {
         JTextField statusField = new JTextField(flight.getStatus());
 
         JPanel panel = new JPanel(new GridLayout(6, 2));
-        panel.setBorder(new EmptyBorder(10, 20, 10, 20)); // Set border for the outer panel
+        panel.setBorder(new EmptyBorder(10, 20, 10, 20));
         panel.add(new JLabel("Origin:"));
         panel.add(originField);
         panel.add(new JLabel("Destination:"));
@@ -431,7 +431,7 @@ public class Main extends JFrame {
     private void showPassengerActionsDialog(Passenger passenger) {
         JDialog dialog = new JDialog(this, "Passenger Actions", true);
         JPanel dialogPanel = new JPanel();
-        dialogPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Set border on the panel
+        dialogPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         dialogPanel.setLayout(new GridLayout(5, 1));
 
         JButton bookFlightButton = new JButton("Book a Flight");
@@ -462,7 +462,7 @@ public class Main extends JFrame {
     private void showBookFlightDialog(Passenger passenger) {
         JDialog dialog = new JDialog(this, "Book a Flight", true);
         JPanel dialogPanel = new JPanel();
-        dialogPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Set border on the panel
+        dialogPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         dialogPanel.setLayout(new GridLayout(3, 2));
 
         JTextField flightNumberField = new JTextField();
@@ -585,7 +585,7 @@ public class Main extends JFrame {
 
         // Create a JTable with the model
         JTable flightTable = new JTable(model);
-        flightTable.setRowHeight(30); // Increase the row height (default is usually around 16-20)
+        flightTable.setRowHeight(30);
 
         // Add the table to a scroll pane
         JScrollPane scrollPane = new JScrollPane(flightTable);
