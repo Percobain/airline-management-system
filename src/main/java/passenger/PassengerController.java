@@ -64,7 +64,7 @@ public class PassengerController {
     // Method for booking a flight
     public boolean bookFlight(String bookingId, Passenger passenger, String flightNumber) {
         Flight flight = flightController.getFlightSchedule().getFlight(flightNumber); // Retrieve flight from
-
+                                                                                      // FlightController
         if (flight == null) {
             System.out.println("Flight with number " + flightNumber + " not found.");
             return false; // Return false if flight is not found
