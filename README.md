@@ -1,5 +1,7 @@
 # Airline Management System
 
+![image](https://github.com/user-attachments/assets/454f121d-7dd7-4c4f-86e5-f99370309a9c)
+
 ## UPDATE
 Everything's Working!
 
@@ -27,7 +29,7 @@ This is a Java-based Airline Management System using Swing for the GUI. The syst
     *   Book flights
     *   View their bookings
     *   Cancel bookings
-    *   Confirm cookings
+    *   Confirm bookings
 
 ### User Features
 
